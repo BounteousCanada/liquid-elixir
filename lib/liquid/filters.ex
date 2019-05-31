@@ -5,6 +5,7 @@ defmodule Liquid.Filters do
   import Kernel, except: [round: 1, abs: 1, floor: 1, ceil: 1]
   import Liquid.Utils, only: [to_number: 1]
   alias Liquid.HTML
+  require Logger
 
   defmodule Functions do
     @moduledoc """
@@ -200,7 +201,7 @@ defmodule Liquid.Filters do
     def default(input, default_val \\ "")
 
     def default(input, default_val) when input in [nil, false, '', "", [], {}, %{}],
-      do: default_val
+        do: default_val
 
     def default(input, _), do: input
 
@@ -224,10 +225,10 @@ defmodule Liquid.Filters do
     def modulo(0, _), do: 0
 
     def modulo(input, operand) when is_number(input) and is_number(operand) and input > 0,
-      do: input |> rem(operand)
+        do: input |> rem(operand)
 
     def modulo(input, operand) when is_number(input) and is_number(operand) and input < 0,
-      do: modulo(input + operand, operand)
+        do: modulo(input + operand, operand)
 
     def modulo(input, operand) do
       input |> to_number |> modulo(to_number(operand))
@@ -441,13 +442,24 @@ defmodule Liquid.Filters do
         input_date |> date(format)
       else
         {:error, :invalid_format} ->
-          with {:ok, input_date} <- Timex.parse(input, "%a %b %d %T %Y", :strftime),
-               do: input_date |> date(format)
+          with {:ok, input_date} <- Timex.parse(input, "%Y-%m-%d", :strftime) do
+            input_date |> date(format)
+          else
+            {:error, _} ->
+              with {:ok, input_date} <- Timex.parse!(input, "%a %b %d %T %Y", :strftime),
+                   do: input_date |> date(format)
+          end
       end
     end
 
     def date(input, format) do
       with {:ok, date_str} <- Timex.format(input, format, :strftime), do: date_str
+    end
+
+    def date(input, output_format, input_format) do
+      with {:ok, input_date} <- Timex.parse(input, input_format, :strftime) do
+        input_date |> date(output_format)
+      end
     end
 
     # Helpers
@@ -546,11 +558,9 @@ defmodule Liquid.Filters do
     try do
       apply(module, name, args)
     rescue
-      e in UndefinedFunctionError ->
-        functions = module.__info__(:functions)
-
-        raise ArgumentError,
-          message: "Liquid error: wrong number of arguments (#{e.arity} for #{functions[name]})"
+      err ->
+        Logger.error(Exception.format(:error, err, __STACKTRACE__))
+        List.first args
     end
   end
 end
