@@ -453,7 +453,7 @@ defmodule Liquid.Filters do
     end
 
     def date(input, format) do
-      with {:ok, date_str} <- Timex.format(input, format, :strftime), do: date_str
+      with {:ok, date_str} <- Timex.format!(input, format, :strftime), do: date_str
     end
 
     def date(input, output_format, input_format) do

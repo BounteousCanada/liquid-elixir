@@ -33,7 +33,7 @@ defmodule Liquid.Mixfile do
       {:credo, "~> 0.9.0 or ~> 1.0", only: [:dev, :test]},
       {:benchee, "~> 0.11", only: :dev},
       {:benchfella, "~> 0.3", only: [:dev, :test]},
-      {:timex, "~> 3.0"},
+      {:timex, "~> 3.5"},
       {:excoveralls, "~> 0.8", only: :test},
       {:jason, "~> 1.1", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev}
