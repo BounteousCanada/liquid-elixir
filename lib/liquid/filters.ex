@@ -491,6 +491,12 @@ defmodule Liquid.Filters do
     defp get_int_and_counter(input) do
       input |> to_number |> get_int_and_counter
     end
+
+    def json(input) do
+      case Jason.encode(input) do
+      {:ok, result} -> result
+      end
+    end
   end
 
   @doc """
